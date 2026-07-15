@@ -10,6 +10,7 @@ import su.nightexpress.nightcore.util.Plugins;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.module.greetings.message.GreetingMessage;
+import su.nightexpress.sunlight.module.greetings.message.DisplayMode;
 import su.nightexpress.sunlight.module.greetings.message.MessageType;
 
 import java.util.*;
@@ -54,7 +55,7 @@ public class GreetingsSettings extends AbstractConfig {
     private static Map<String, GreetingMessage> getDefaultJoins() {
         Map<String, GreetingMessage> map = new HashMap<>();
 
-        map.put(DEFAULT, new GreetingMessage(0, GRAY.wrap("[" + GREEN.wrap("+") + "]" + " " + PLAYER_PREFIX + PLAYER_DISPLAY_NAME), Set.of(WILDCARD)));
+        map.put(DEFAULT, new GreetingMessage(0, GRAY.wrap("[" + GREEN.wrap("+") + "]" + " " + PLAYER_PREFIX + PLAYER_DISPLAY_NAME), Set.of(WILDCARD), DisplayMode.CHAT));
 
         return map;
     }
@@ -63,7 +64,7 @@ public class GreetingsSettings extends AbstractConfig {
     private static Map<String, GreetingMessage> getDefaultQuits() {
         Map<String, GreetingMessage> map = new HashMap<>();
 
-        map.put(DEFAULT, new GreetingMessage(0, GRAY.wrap("[" + RED.wrap("-") + "]" + " " + PLAYER_PREFIX + PLAYER_DISPLAY_NAME), Set.of(WILDCARD)));
+        map.put(DEFAULT, new GreetingMessage(0, GRAY.wrap("[" + RED.wrap("-") + "]" + " " + PLAYER_PREFIX + PLAYER_DISPLAY_NAME), Set.of(WILDCARD), DisplayMode.CHAT));
 
         return map;
     }

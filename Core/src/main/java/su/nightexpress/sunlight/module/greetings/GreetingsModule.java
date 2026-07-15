@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.util.EventUtils;
+import su.nightexpress.nightcore.util.Players;
 import su.nightexpress.nightcore.util.bridge.wrapper.NightComponent;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
@@ -18,6 +19,7 @@ import su.nightexpress.sunlight.module.Module;
 import su.nightexpress.sunlight.module.ModuleContext;
 import su.nightexpress.sunlight.module.greetings.listener.GreetingsListener;
 import su.nightexpress.sunlight.module.greetings.message.GreetingMessage;
+import su.nightexpress.sunlight.module.greetings.message.DisplayMode;
 import su.nightexpress.sunlight.module.greetings.message.MessageType;
 
 import java.util.Comparator;
@@ -82,7 +84,14 @@ public class GreetingsModule extends Module {
             .andThen(CommonPlaceholders.forPlaceholderAPI(player))
             .build();
 
-        NightComponent component = NightMessage.parse(context.apply(message.getMessage()));
+        String resolved = context.apply(message.getMessage());
+        if (message.getDisplayMode() == DisplayMode.ACTION_BAR) {
+            consumer.accept(null);
+            this.plugin.getServer().getOnlinePlayers().forEach(other -> Players.sendActionBarText(other, resolved));
+            return;
+        }
+
+        NightComponent component = NightMessage.parse(resolved);
         consumer.accept(component);
     }
 

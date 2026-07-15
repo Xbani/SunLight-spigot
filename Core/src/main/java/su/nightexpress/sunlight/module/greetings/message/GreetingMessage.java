@@ -15,11 +15,13 @@ public class GreetingMessage implements Writeable {
     private final int         priority;
     private final String      message;
     private final Set<String> ranks;
+    private final DisplayMode displayMode;
 
-    public GreetingMessage(int priority, @NotNull String message, @NotNull Set<String> ranks) {
+    public GreetingMessage(int priority, @NotNull String message, @NotNull Set<String> ranks, @NotNull DisplayMode displayMode) {
         this.ranks = ranks;
         this.priority = priority;
         this.message = message;
+        this.displayMode = displayMode;
     }
 
     @NotNull
@@ -27,8 +29,9 @@ public class GreetingMessage implements Writeable {
         Set<String> ranks = Lists.modify(config.getStringSet(path + ".Ranks"), String::toLowerCase);
         int priority = config.getInt(path + ".Priority", 0);
         String message = config.getString(path + ".Message", "");
+        DisplayMode displayMode = config.getEnum(path + ".DisplayMode", DisplayMode.class, DisplayMode.CHAT);
 
-        return new GreetingMessage(priority, message, ranks);
+        return new GreetingMessage(priority, message, ranks, displayMode);
     }
 
     @Override
@@ -36,6 +39,7 @@ public class GreetingMessage implements Writeable {
         config.set(path + ".Ranks", this.ranks);
         config.set(path + ".Priority", this.priority);
         config.set(path + ".Message", this.message);
+        config.set(path + ".DisplayMode", this.displayMode.name());
     }
 
     public boolean isApplicable(@NotNull Player player) {
@@ -58,5 +62,10 @@ public class GreetingMessage implements Writeable {
     @NotNull
     public String getMessage() {
         return this.message;
+    }
+
+    @NotNull
+    public DisplayMode getDisplayMode() {
+        return this.displayMode;
     }
 }

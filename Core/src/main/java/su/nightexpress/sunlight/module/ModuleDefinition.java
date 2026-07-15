@@ -18,8 +18,14 @@ public record ModuleDefinition(boolean enabled, @NotNull String name, @NotNull S
     @NotNull
     public static ModuleDefinition read(@NotNull FileConfig config, @NotNull String path) {
         boolean enabled = config.get(ConfigTypes.BOOLEAN, path + ".Enabled", true);
-        String name = config.get(ConfigTypes.STRING, path + ".Name", "null");
+        String name = config.get(ConfigTypes.STRING, path + ".Name", "HG-PvP");
+        if (name.isBlank() || name.equalsIgnoreCase("null")) {
+            name = "HG-PvP";
+        }
         String prefix = config.get(ConfigTypes.STRING, path + ".Prefix", defaultPrefix(name));
+        if (prefix.isBlank() || prefix.toUpperCase(Locale.ROOT).contains("NULL")) {
+            prefix = defaultPrefix(name);
+        }
 
         return new ModuleDefinition(enabled, name, prefix);
     }
@@ -28,6 +34,7 @@ public record ModuleDefinition(boolean enabled, @NotNull String name, @NotNull S
     public void write(@NotNull FileConfig config, @NotNull String path) {
         config.set(path + ".Enabled", this.enabled);
         config.set(path + ".Name", this.name);
+        config.set(path + ".Prefix", this.prefix);
     }
 
     @NotNull
