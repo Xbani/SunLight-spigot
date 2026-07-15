@@ -19,7 +19,8 @@ public class PlayerEnderChest extends PlayerEnderChestContainer {
     public PlayerEnderChest(CraftPlayer owner) {
         super(owner.getHandle());
         this.owner = owner;
-        Reflex.setFieldValue(this, ITEMS_FIELD, owner.getHandle().getEnderChestInventory().items);
+        Reflex.setFieldValue(this, ITEMS_FIELD,
+            Reflex.getFieldValue(owner.getHandle().getEnderChestInventory(), ITEMS_FIELD));
     }
 
     @NotNull
