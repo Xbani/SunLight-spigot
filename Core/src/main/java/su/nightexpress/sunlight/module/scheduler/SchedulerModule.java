@@ -20,17 +20,20 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SchedulerModule extends Module {
 
     private final SchedulerSettings settings;
 
     private final Map<String, Announcer> announcerByIdMap;
+    private final Set<Announcer> firstBroadcastPending;
 
     public SchedulerModule(@NotNull ModuleContext context) {
         super(context);
         this.settings = new SchedulerSettings();
         this.announcerByIdMap = new HashMap<>();
+        this.firstBroadcastPending = ConcurrentHashMap.newKeySet();
     }
 
     @Override
@@ -40,6 +43,15 @@ public class SchedulerModule extends Module {
         this.loadAnnouncers();
 
         this.getAnnouncers().forEach(announcer -> {
+            // NightTask executes repeating jobs immediately. During startup there are
+            // no players yet, so the first announcement used to be consumed in the
+            // void. Poll briefly until somebody can actually receive the first one.
+            this.firstBroadcastPending.add(announcer);
+            this.addAsyncTask(() -> {
+                if (!this.firstBroadcastPending.contains(announcer)) return;
+                if (Players.getOnline().stream().noneMatch(announcer::canSee)) return;
+                if (this.firstBroadcastPending.remove(announcer)) this.broadcastAnnouncer(announcer);
+            }, 10);
             this.addAsyncTask(() -> this.broadcastAnnouncer(announcer), announcer.getInterval());
         });
     }
@@ -47,6 +59,7 @@ public class SchedulerModule extends Module {
     @Override
     protected void unloadModule() {
         this.announcerByIdMap.clear();
+        this.firstBroadcastPending.clear();
     }
 
     @Override
@@ -106,10 +119,13 @@ public class SchedulerModule extends Module {
     }
 
     public void broadcastAnnouncer(@NotNull Announcer announcer) {
+        var recipients = Players.getOnline().stream().filter(announcer::canSee).toList();
+        if (recipients.isEmpty()) return;
+
         String message = announcer.selectMessage();
         if (message == null) return;
 
-        Players.getOnline().forEach(player -> {
+        recipients.forEach(player -> {
             PlaceholderContext context = PlaceholderContext.builder()
                 .with(CommonPlaceholders.PLAYER.resolver(player))
                 .andThen(CommonPlaceholders.forPlaceholderAPI(player))
@@ -117,5 +133,7 @@ public class SchedulerModule extends Module {
 
             Players.sendMessage(player, context.apply(message));
         });
+
+        this.info("Broadcast announcer message to " + recipients.size() + " player(s).");
     }
 }

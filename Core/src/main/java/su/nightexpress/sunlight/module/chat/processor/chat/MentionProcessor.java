@@ -55,7 +55,12 @@ public class MentionProcessor implements MessageProcessor {
         StringBuilder builder = new StringBuilder(format.length() + 50);
 
         while (matcher.find()) {
-            String mentionName = matcher.group(1);
+            String matchedMention = matcher.groupCount() > 0 ? matcher.group(1) : matcher.group();
+            String mentionName = matchedMention.startsWith("@") ? matchedMention.substring(1) : matchedMention;
+            if (mentionName.isEmpty()) {
+                matcher.appendReplacement(builder, Matcher.quoteReplacement(matcher.group()));
+                continue;
+            }
             Runnable appendRaw = () -> matcher.appendReplacement(builder, Matcher.quoteReplacement(matcher.group(0)));
 
             ChatMention mention = this.getMention(module, context, mentionName);
